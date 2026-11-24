@@ -40,7 +40,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Configure Gradle Mirror (Avoid 429 Rate Limit)
+      - name: Configure Gradle Mirror & Fix Kotlin Duplicates
         run: |
           mkdir -p ~/.gradle
           cat << 'EOF' > ~/.gradle/init.gradle
@@ -56,6 +56,10 @@ jobs:
               maven { url 'https://googleapis.com' }
               google()
               mavenCentral()
+            }
+            configurations.all {
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
             }
           }
           EOF
