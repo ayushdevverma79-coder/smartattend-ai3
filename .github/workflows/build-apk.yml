@@ -40,8 +40,25 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Accept Android Licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - name: Configure Gradle Mirror (Avoid 429 Rate Limit)
+        run: |
+          mkdir -p ~/.gradle
+          cat << 'EOF' > ~/.gradle/init.gradle
+          allprojects {
+            buildscript {
+              repositories {
+                maven { url 'https://googleapis.com' }
+                google()
+                mavenCentral()
+              }
+            }
+            repositories {
+              maven { url 'https://googleapis.com' }
+              google()
+              mavenCentral()
+            }
+          }
+          EOF
 
       - name: Configure Capacitor & Android
         run: |
@@ -68,7 +85,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --max-workers=2
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
